@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewport-meta" content="width=device-width, initial-scale=1.0">
+    <title>مدير جهات الاتصال الذكي</title>
+    <!-- مكتبة الأيقونات (الإصدار 6.5.1 لحل تحذيرات الخطوط) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* المتغيرات الأساسية */
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --primary-color: #6200ea;
+            --primary-hover: #7c4dff;
+            --danger-color: #cf6679;
+            --danger-hover: #ff7961;
+            --success-color: #03dac6;
+            --success-hover: #64ffda;
+            --warning-color: #ffb300;
+            --input-bg: #2c2c2c;
+            --border-color: #444;
+            --select-bg: #2a2a2a;
+        }
+
+        /* الوضع النهاري */
+        body.light-mode {
+            --bg-color: #f4f6f9;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --primary-color: #3f51b5;
+            --primary-hover: #303f9f;
+            --danger-color: #f44336;
+            --danger-hover: #d32f2f;
+            --success-color: #4caf50;
+            --success-hover: #388e3c;
+            --input-bg: #ffffff;
+            --border-color: #cccccc;
+            --select-bg: #e0e0e0;
+        }
+
+        /* تنسيقات عامة */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        * { box-sizing: border-box; }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-weight: bold;
+            transition: 0.2s;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-success { background-color: var(--success-color); color: #000; }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-warning { background-color: var(--warning-color); color: #000; }
+        .btn-info { background-color: #0288d1; color: white; }
+        .btn-info:hover { background-color: #03a9f4; }
+        .telegram-btn { background-color: #0088cc; color: white; }
+        .telegram-btn:hover { background-color: #0077b3; }
+        .btn-danger-strong { background-color: #b71c1c; color: white; }
+        .btn-danger-strong:hover { background-color: #d32f2f; }
+
+        /* تنسيق زر الترتيب الجديد */
+        .sort-select {
+            background-color: var(--success-color);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+        }
+        .sort-select option {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        input[type="text"], input[type="tel"], input[type="password"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        /* الشاشات */
+        #login-screen, #app-screen {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        #login-screen.active, #app-screen.active { display: block; }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .header, .toolbar, .selection-bar, .search-bar-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header { justify-content: space-between; }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* شريط البحث */
+        .search-bar-container {
+            position: relative;
+            display: block;
+        }
+        .search-bar-container input {
+            margin-bottom: 0;
+            padding-right: 40px;
+            font-size: 1.1em;
+            width: 100%;
+        }
+        .search-bar-container i {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+
+        /* شريط التحديد */
+        .selection-bar {
+            background-color: var(--select-bg);
+            border: 1px solid var(--border-color);
+            justify-content: space-between;
+        }
+
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .selection-info input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .selection-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* الكروت - وضع الشبكة (الافتراضي) */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .contact-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .contact-card:hover { transform: translateY(-3px); }
+
+        .card-checkbox {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .contact-info h3 { margin: 0 0 10px 0; color: var(--primary-color); padding-left: 30px;}
+        .contact-info p { margin: 0 0 15px 0; font-size: 1.1em; direction: ltr; text-align: right; }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card-actions button, .card-actions a {
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .whatsapp-btn { background-color: #25D366; color: white; }
+        .whatsapp-btn:hover { background-color: #128C7E; }
+        .call-btn { background-color: #007bff; color: white; }
+        .call-btn:hover { background-color: #0056b3; }
+
+        .delete-btn-card { width: 100%; margin-top: 5px; }
+
+        /* الكروت - وضع القائمة */
+        .contacts-grid.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .contacts-grid.list-view .contact-card {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .contacts-grid.list-view .card-checkbox {
+            position: static;
+            margin-left: 15px;
+            margin-bottom: 0;
+        }
+
+        .contacts-grid.list-view .contact-info {
+            flex: 1;
+            min-width: 200px;
+            padding-left: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .contacts-grid.list-view .contact-info h3, 
+        .contacts-grid.list-view .contact-info p {
+            margin: 0;
+        }
+
+        .contacts-grid.list-view .card-actions {
+            display: flex;
+            margin-bottom: 0;
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .contacts-grid.list-view .delete-btn-card {
+            width: auto;
+            margin-top: 0;
+            margin-right: 8px;
+        }
+
+        /* تجاوب وضع القائمة مع الموبايل */
+        @media (max-width: 768px) {
+            .contacts-grid.list-view .contact-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .contacts-grid.list-view .card-actions {
+                width: 100%;
+                margin-top: 10px;
+                margin-right: 0;
+                display: grid;
+            }
+            .contacts-grid.list-view .delete-btn-card {
+                width: 100%;
+                margin-top: 5px;
+                margin-right: 0;
+            }
+        }
+
+        .add-form-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .add-form-container.active { display: block; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success-color);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+    </style>
+
+    <!-- تحميل Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js" crossorigin="anonymous"></script>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="./manifest.json?v=v1785922934414">
+    <meta name="theme-color" content="#c86ab8">
+    <link rel="apple-touch-icon" href="./icon-192.png?v=v1785922934414">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js?v=v1785922934414')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Failed', err));
+        });
+      }
+    </script>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="./manifest.json?v=v1790891958741">
+    <meta name="theme-color" content="#b875bd">
+    <link rel="apple-touch-icon" href="./icon-192.png?v=v1790891958741">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js?v=v1790891958741')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Failed', err));
+        });
+      }
+    </script>
+</head>
+<body>
+
+    <div id="toast" class="toast">تمت العملية بنجاح!</div>
+
+    <!-- شاشة الدخول -->
+    <div id="login-screen" class="active">
+        <div class="login-container">
+            <h2><i class="fas fa-lock"></i> ادخل الباسورد بتاعك</h2>
+            <p style="font-size: 0.9em; color: #888;">كل باسورد بيفتح ملفات مختلفة لوحدها</p>
+            <input type="password" id="password-input" placeholder="اكتب الباسورد هنا...">
+            <button class="btn-primary" style="width: 100%;" onclick="window.loginUser()">دخول <i class="fas fa-sign-in-alt"></i></button>
+        </div>
+    </div>
+
+    <!-- شاشة التطبيق -->
+    <div id="app-screen">
+        <div class="header">
+            <h2><i class="fas fa-address-book"></i> جهات الاتصال بتاعتك</h2>
+            <div class="header-actions">
+                <button class="btn-info" id="layout-mode-btn" onclick="window.toggleLayoutMode()">
+                    <i class="fas fa-list"></i> شكل القائمة
+                </button>
+                <button class="btn-info" id="view-mode-btn" onclick="window.toggleViewMode()">
+                    <i class="fas fa-desktop"></i> عرض الديسكتوب
+                </button>
+                <button class="btn-warning" onclick="window.toggleTheme()">
+                    <i class="fas fa-adjust"></i> غير المود (دارك/لايت)
+                </button>
+                <button class="btn-danger" onclick="window.logoutUser()">
+                    <i class="fas fa-sign-out-alt"></i> خروج
+                </button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn-success" onclick="window.toggleAddForm()">
+                <i class="fas fa-user-plus"></i> ضيف جهة اتصال جديدة
+            </button>
+            
+            <!-- زرار الترتيب والفرز الجديد (بـ 8 أوضاع) -->
+            <select id="sort-select" class="sort-select" onchange="window.changeSortMode()">
+                <option value="default_desc">🔄 الأحدث إضافة (الافتراضي)</option>
+                <option value="default_asc">⏳ الأقدم إضافة</option>
+                <option value="name_asc">🔠 الاسم (أ ⬅️ ي)</option>
+                <option value="name_desc">🔠 الاسم (ي ⬅️ أ)</option>
+                <option value="phone_asc">🔢 الرقم (تصاعدي)</option>
+                <option value="phone_desc">🔢 الرقم (تنازلي)</option>
+                <option value="no_name">👤 بدون اسم أولاً</option>
+                <option value="no_phone">📱 بدون رقم أولاً</option>
+            </select>
+
+            <button class="btn-danger" onclick="window.deleteDuplicates()">
+                <i class="fas fa-copy"></i> امسح المكررين
+            </button>
+            <button class="btn-danger" onclick="window.deleteEmptyContacts()">
+                <i class="fas fa-user-slash"></i> امسح اللي من غير رقم
+            </button>
+
+            <!-- استيراد متعدد -->
+            <div class="file-input-wrapper">
+                <button class="telegram-btn"><i class="fab fa-telegram"></i> استيراد من تيليجرام</button>
+                <input type="file" accept=".json,.html" multiple onchange="window.importTelegram(event)">
+            </div>
+            <div class="file-input-wrapper">
+                <button class="btn-primary"><i class="fas fa-file-import"></i> استيراد VCF</button>
+                <input type="file" accept=".vcf" multiple onchange="window.importVCF(event)">
+            </div>
+            <div class="file-input-wrapper">
+                <button class="btn-primary"><i class="fas fa-file-import"></i> استيراد JSON</button>
+                <input type="file" accept=".json" multiple onchange="window.importJSON(event)">
+            </div>
+
+            <button class="btn-primary" onclick="window.exportJSON()">
+                <i class="fas fa-file-export"></i> تصدير الكل JSON
+            </button>
+            <button class="btn-primary" onclick="window.exportAllVCF()">
+                <i class="fas fa-file-export"></i> تصدير الكل VCF
+            </button>
+        </div>
+
+        <!-- شريط البحث السريع -->
+        <div class="search-bar-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="ابحث بالاسم أو الرقم هنا... (الفلترة تلقائية)" oninput="window.renderContacts()">
+        </div>
+
+        <!-- فورم الإضافة -->
+        <div id="add-form" class="add-form-container">
+            <h3><i class="fas fa-plus-circle"></i> إضافة جديد</h3>
+            <input type="text" id="new-name" placeholder="الاسم...">
+            <input type="tel" id="new-phone" placeholder="رقم التليفون..." dir="ltr">
+            <button class="btn-success" onclick="window.saveNewContact()">احفظ <i class="fas fa-save"></i></button>
+            <button class="btn-danger" onclick="window.toggleAddForm()">إلغاء <i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- شريط التحديد -->
+        <div class="selection-bar">
+            <div class="selection-info">
+                <input type="checkbox" id="select-all-checkbox" onclick="window.toggleSelectAll()">
+                <label for="select-all-checkbox">تحديد الكل</label>
+                <span style="color: var(--primary-color);">
+                    (<span id="selected-count">0</span> / <span id="total-count">0</span>)
+                </span>
+            </div>
+            <div class="selection-actions">
+                <button class="btn-danger-strong" onclick="window.deleteAllContacts()">
+                    <i class="fas fa-bomb"></i> مسح الكل
+                </button>
+                <button class="btn-danger" onclick="window.deleteSelected()">
+                    <i class="fas fa-trash-alt"></i> مسح المحدد
+                </button>
+                <button class="btn-primary" onclick="window.copySelected()">
+                    <i class="fas fa-copy"></i> نسخ المحدد
+                </button>
+                <button class="btn-primary" onclick="window.exportSelectedVCF()">
+                    <i class="fas fa-file-export"></i> تصدير المحدد VCF
+                </button>
+            </div>
+        </div>
+
+        <!-- الكروت -->
+        <div class="contacts-grid" id="contacts-container"></div>
+    </div>
+
+    <script>
+        // --- دوال الحماية والتشفير ---
+        window.getSafePath = function(pass) {
+            if(!pass) return "default";
+            return pass.replace(/\./g, '%2E').replace(/#/g, '%23').replace(/\$/g, '%24')
+                       .replace(/\[/g, '%5B').replace(/\]/g, '%5D').replace(/\//g, '%2F');
+        };
+
+        window.getSafeFileName = function(pass) {
+            if(!pass) return "default";
+            return pass.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '_');
+        };
+
+        let memoryStorage = {};
+        let memoryLocal = {};
+        function safeSetSession(key, value) { try { sessionStorage.setItem(key, value); } catch (e) { memoryStorage[key] = value; } }
+        function safeGetSession(key) { try { return sessionStorage.getItem(key) || memoryStorage[key]; } catch (e) { return memoryStorage[key]; } }
+        function safeRemoveSession(key) { try { sessionStorage.removeItem(key); } catch (e) { delete memoryStorage[key]; } }
+        function safeSetLocal(key, value) { try { localStorage.setItem(key, value); } catch (e) { memoryLocal[key] = value; } }
+        function safeGetLocal(key) { try { return localStorage.getItem(key) || memoryLocal[key]; } catch (e) { return memoryLocal[key]; } }
+
+        // --- إعدادات الفايربيز ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCA8tjD2nzixDARhXApDLZrtDBIqJY_0I0",
+            authDomain: "myyppproject.firebaseapp.com",
+            databaseURL: "https://myyppproject-default-rtdb.firebaseio.com",
+            projectId: "myyppproject",
+            storageBucket: "myyppproject.firebasestorage.app",
+            messagingSenderId: "679811302650",
+            appId: "1:679811302650:web:23da36e87af1845194b543",
+            measurementId: "G-8X5ET6BQFY"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let currentPassword = "";
+        let globalContacts = {};
+        let totalContactsCount = 0;
+
+        // --- عند تحميل الصفحة ---
+        window.onload = () => {
+            const savedPassword = safeGetSession("contact_app_password");
+            const savedTheme = safeGetLocal("contact_app_theme");
+            const savedViewMode = safeGetLocal("contact_app_view_mode");
+            const savedLayout = safeGetLocal("contact_app_layout");
+            const savedSort = safeGetLocal("contact_app_sort");
+            
+            if (savedTheme === 'light') document.body.classList.add('light-mode');
+            
+            if (savedViewMode === 'desktop') {
+                document.getElementById('viewport-meta').setAttribute('content', 'width=1200');
+                document.getElementById('view-mode-btn').innerHTML = '<i class="fas fa-mobile-alt"></i> عرض الموبايل';
+            }
+
+            if (savedLayout === 'list') {
+                document.getElementById('contacts-container').classList.add('list-view');
+                document.getElementById('layout-mode-btn').innerHTML = '<i class="fas fa-th-large"></i> شكل الشبكة';
+            }
+
+            if (savedSort) {
+                const sortSelect = document.getElementById('sort-select');
+                if(sortSelect) sortSelect.value = savedSort;
+            }
+
+            if (savedPassword) {
+                document.getElementById('password-input').value = savedPassword;
+                window.loginUser();
+            }
+        };
+
+        // --- دوال التحكم في العرض والتصميم والترتيب ---
+        window.changeSortMode = function() {
+            const mode = document.getElementById('sort-select').value;
+            safeSetLocal('contact_app_sort', mode);
+            window.renderContacts();
+        };
+
+        window.toggleLayoutMode = function() {
+            const container = document.getElementById('contacts-container');
+            const btn = document.getElementById('layout-mode-btn');
+            container.classList.toggle('list-view');
+
+            if (container.classList.contains('list-view')) {
+                btn.innerHTML = '<i class="fas fa-th-large"></i> شكل الشبكة';
+                safeSetLocal('contact_app_layout', 'list');
+            } else {
+                btn.innerHTML = '<i class="fas fa-list"></i> شكل القائمة';
+                safeSetLocal('contact_app_layout', 'grid');
+            }
+        };
+
+        window.toggleViewMode = function() {
+            const viewportMeta = document.getElementById('viewport-meta');
+            const btn = document.getElementById('view-mode-btn');
+            if (viewportMeta.getAttribute('content') === 'width=device-width, initial-scale=1.0') {
+                viewportMeta.setAttribute('content', 'width=1200');
+                btn.innerHTML = '<i class="fas fa-mobile-alt"></i> عرض الموبايل';
+                safeSetLocal('contact_app_view_mode', 'desktop');
+                window.showToast("تم التحويل لعرض الديسكتوب");
+            } else {
+                viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+                btn.innerHTML = '<i class="fas fa-desktop"></i> عرض الديسكتوب';
+                safeSetLocal('contact_app_view_mode', 'mobile');
+                window.showToast("تم التحويل لعرض الموبايل");
+            }
+        };
+
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        window.toggleTheme = function() {
+            document.body.classList.toggle('light-mode');
+            safeSetLocal("contact_app_theme", document.body.classList.contains('light-mode') ? "light" : "dark");
+        }
+
+        // --- تسجيل الدخول وجلب البيانات ---
+        window.loginUser = function() {
+            const pass = document.getElementById('password-input').value.trim();
+            if (!pass) return alert("لازم تكتب باسورد يا غالي!");
+            currentPassword = pass;
+            safeSetSession("contact_app_password", currentPassword);
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('app-screen').classList.add('active');
+            window.loadContacts();
+        }
+
+        window.logoutUser = function() {
+            safeRemoveSession("contact_app_password");
+            currentPassword = "";
+            document.getElementById('app-screen').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+            document.getElementById('password-input').value = '';
+        }
+
+        window.loadContacts = function() {
+            database.ref('workspaces/' + window.getSafePath(currentPassword) + '/contacts').on('value', (snapshot) => {
+                globalContacts = snapshot.val() || {};
+                window.renderContacts();
+            });
+        }
+
+        // --- رسم جهات الاتصال مع نظام الفرز بـ 8 أوضاع (محدثة لمنع التهنيج Fragment) ---
+        window.renderContacts = function() {
+            const container = document.getElementById('contacts-container');
+            container.innerHTML = '';
+            
+            const searchInput = document.getElementById('search-input');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            
+            totalContactsCount = Object.keys(globalContacts).length;
+            let displayedCount = 0;
+
+            const fragment = document.createDocumentFragment();
+
+            // تحويل البيانات لمصفوفة عشان نقدر نفرزها براحتنا
+            let contactsArray = [];
+            for (let key in globalContacts) {
+                contactsArray.push({ key: key, data: globalContacts[key] });
+            }
+
+            // تطبيق نظام الفرز (الترتيب)
+            const sortMode = safeGetLocal('contact_app_sort') || 'default_desc';
+            
+            contactsArray.sort((a, b) => {
+                let nameA = (a.data.name || '').trim().toLowerCase();
+                let nameB = (b.data.name || '').trim().toLowerCase();
+                let phoneA = (a.data.phone || '').trim();
+                let phoneB = (b.data.phone || '').trim();
+
+                switch (sortMode) {
+                    case 'name_asc': return nameA.localeCompare(nameB, 'ar'); // اسم تصاعدي
+                    case 'name_desc': return nameB.localeCompare(nameA, 'ar'); // اسم تنازلي
+                    case 'phone_asc': return phoneA.localeCompare(phoneB); // رقم تصاعدي
+                    case 'phone_desc': return phoneB.localeCompare(phoneA); // رقم تنازلي
+                    case 'no_name': // بدون اسم أولاً
+                        if (nameA === '' && nameB !== '') return -1;
+                        if (nameA !== '' && nameB === '') return 1;
+                        return b.key.localeCompare(a.key); 
+                    case 'no_phone': // بدون رقم أولاً
+                        if (phoneA === '' && phoneB !== '') return -1;
+                        if (phoneA !== '' && phoneB === '') return 1;
+                        return b.key.localeCompare(a.key);
+                    case 'default_asc': return a.key.localeCompare(b.key); // أقدم إضافة
+                    case 'default_desc': 
+                    default: return b.key.localeCompare(a.key); // أحدث إضافة (الافتراضي)
+                }
+            });
+
+            // رسم الكروت بعد الترتيب والفلترة
+            contactsArray.forEach(item => {
+                const key = item.key;
+                const contact = item.data;
+                const name = (contact.name || '').toLowerCase();
+                const phone = (contact.phone || '').toLowerCase();
+                
+                // فلترة السيرش
+                if (searchTerm !== '' && !name.includes(searchTerm) && !phone.includes(searchTerm)) {
+                    return; // بتعمل تخطي للكارت لو مش في البحث
+                }
+
+                displayedCount++;
+                const cleanPhone = contact.phone ? contact.phone.replace(/[^\d+]/g, '') : '';
+                
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                card.innerHTML = `
+                    <input type="checkbox" class="card-checkbox" data-key="${key}" onchange="window.updateSelectionCount()">
+                    <div class="contact-info">
+                        <h3><i class="fas fa-user"></i> ${contact.name || 'بدون اسم'}</h3>
+                        <p><i class="fas fa-phone-alt"></i> ${contact.phone || 'لا يوجد رقم'}</p>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a href="tel:${cleanPhone}" class="btn-primary call-btn"><i class="fas fa-phone"></i> اتصال</a>
+                        <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-primary whatsapp-btn"><i class="fab fa-whatsapp"></i> واتساب</a>
+                        <button class="btn-primary" onclick="window.copyText('${contact.name}', 'الاسم')"><i class="fas fa-copy"></i> نسخ الاسم</button>
+                        <button class="btn-primary" onclick="window.copyText('${contact.phone}', 'الرقم')"><i class="fas fa-copy"></i> نسخ الرقم</button>
+                        <button class="btn-warning" onclick="window.editContact('${key}', 'name', '${contact.name || ''}')"><i class="fas fa-pen"></i> تعديل الاسم</button>
+                        <button class="btn-warning" onclick="window.editContact('${key}', 'phone', '${contact.phone || ''}')"><i class="fas fa-pen"></i> تعديل الرقم</button>
+                    </div>
+                    <button class="btn-danger delete-btn-card" onclick="window.deleteSingleContact('${key}')">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                `;
+                fragment.appendChild(card);
+            });
+            
+            container.appendChild(fragment); 
+            
+            document.getElementById('total-count').innerText = displayedCount;
+            document.getElementById('selected-count').innerText = "0";
+            document.getElementById('select-all-checkbox').checked = false;
+        }
+
+        // --- دوال الإضافة والتعديل والمسح ---
+        window.toggleAddForm = function() {
+            document.getElementById('add-form').classList.toggle('active');
+        }
+
+        window.saveNewContact = function() {
+            const name = document.getElementById('new-name').value.trim();
+            const phone = document.getElementById('new-phone').value.trim();
+            if (!name && !phone) return alert("اكتب اسم أو رقم!");
+
+            database.ref('workspaces/' + window.getSafePath(currentPassword) + '/contacts').push({ name, phone })
+                .then(() => {
+                    document.getElementById('new-name').value = '';
+                    document.getElementById('new-phone').value = '';
+                    window.toggleAddForm();
+                    window.showToast("تم الحفظ بنجاح");
+                }).catch(err => alert("حصلت مشكلة في الحفظ: " + err.message));
+        }
+
+        window.deleteSingleContact = function(key) {
+            if (confirm("متأكد هتمسح جهة الاتصال دي؟")) {
+                database.ref(`workspaces/${window.getSafePath(currentPassword)}/contacts/${key}`).remove();
+                window.showToast("تم الحذف");
+            }
+        }
+
+        window.deleteAllContacts = function() {
+            if(Object.keys(globalContacts).length === 0) return alert("القايمة فاضية مفيش حاجة تتمسح!");
+            
+            if (confirm("⚠️ تحذير خطير ⚠️\nهل أنت متأكد مليون في المية إنك عايز تمسح **كل** جهات الاتصال؟\nالخطوة دي مش هينفع ترجع فيها!")) {
+                if(confirm("آخر تأكيد: هل تريد مسح كل الأرقام بشكل نهائي؟")) {
+                    database.ref('workspaces/' + window.getSafePath(currentPassword) + '/contacts').remove()
+                        .then(() => window.showToast("تم مسح كل جهات الاتصال بنجاح!"))
+                        .catch(err => alert("حصل خطأ أثناء المسح: " + err.message));
+                }
+            }
+        }
+
+        window.editContact = function(key, field, oldValue) {
+            const newValue = prompt(`اكتب ${field === 'name' ? 'الاسم' : 'الرقم'} الجديد:`, oldValue);
+            if (newValue !== null) {
+                database.ref(`workspaces/${window.getSafePath(currentPassword)}/contacts/${key}`).update({ [field]: newValue.trim() });
+                window.showToast("تم التعديل");
+            }
+        }
+
+        window.copyText = function(text, type) {
+            if (!text || text === 'undefined') return alert("مفيش حاجة تتنسخ!");
+            navigator.clipboard.writeText(text).then(() => window.showToast(`تم نسخ ${type}`)).catch(() => alert("عذراً، المتصفح بتاعك مش بيدعم النسخ المباشر."));
+        }
+
+        // --- دوال التحديد ---
+        window.toggleSelectAll = function() {
+            const isChecked = document.getElementById('select-all-checkbox').checked;
+            const checkboxes = document.querySelectorAll('.card-checkbox');
+            checkboxes.forEach(cb => cb.checked = isChecked);
+            window.updateSelectionCount();
+        }
+
+        window.updateSelectionCount = function() {
+            const checkboxes = document.querySelectorAll('.card-checkbox:checked');
+            document.getElementById('selected-count').innerText = checkboxes.length;
+            const allCheckboxes = document.querySelectorAll('.card-checkbox');
+            const mainCheckbox = document.getElementById('select-all-checkbox');
+            if(allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length) mainCheckbox.checked = true;
+            else mainCheckbox.checked = false;
+        }
+
+        window.getSelectedKeys = function() {
+            const checkboxes = document.querySelectorAll('.card-checkbox:checked');
+            return Array.from(checkboxes).map(cb => cb.getAttribute('data-key'));
+        }
+
+        window.deleteSelected = function() {
+            const keys = window.getSelectedKeys();
+            if (keys.length === 0) return alert("حدد جهات اتصال الأول عشان تمسحها!");
+            if (confirm(`متأكد إنك عايز تمسح ${keys.length} جهة اتصال؟`)) {
+                let updates = {};
+                keys.forEach(key => updates[key] = null);
+                database.ref(`workspaces/${window.getSafePath(currentPassword)}/contacts`).update(updates);
+                window.showToast(`تم مسح ${keys.length} جهة اتصال`);
+            }
+        }
+
+        window.copySelected = function() {
+            const keys = window.getSelectedKeys();
+            if (keys.length === 0) return alert("حدد جهات اتصال الأول!");
+            let textToCopy = "";
+            keys.forEach(key => {
+                const contact = globalContacts[key];
+                textToCopy += `الاسم: ${contact.name || 'بدون اسم'} | الرقم: ${contact.phone || 'بدون رقم'}\n`;
+            });
+            navigator.clipboard.writeText(textToCopy).then(() => window.showToast(`تم نسخ بيانات ${keys.length} جهة اتصال`)).catch(() => alert("عذراً، المتصفح مش بيدعم النسخ المباشر."));
+        }
+
+        // --- دوال التنظيف ---
+        window.deleteDuplicates = function() {
+            if(!confirm("متأكد إنك عايز تمسح الأرقام المكررة؟ هنخلي نسخة واحدة من كل رقم.")) return;
+            const seenPhones = new Set();
+            let updates = {};
+            let deletedCount = 0;
+
+            for (let key in globalContacts) {
+                const phone = globalContacts[key].phone;
+                const cleanPhone = phone ? phone.replace(/\s+/g, '') : '';
+                if (cleanPhone) {
+                    if (seenPhones.has(cleanPhone)) {
+                        updates[key] = null;
+                        deletedCount++;
+                    } else seenPhones.add(cleanPhone);
+                }
+            }
+            if (deletedCount > 0) {
+                database.ref(`workspaces/${window.getSafePath(currentPassword)}/contacts`).update(updates);
+            }
+            window.showToast(`تم مسح ${deletedCount} جهة اتصال مكررة.`);
+        }
+
+        window.deleteEmptyContacts = function() {
+            if(!confirm("متأكد هتمسح أي جهة اتصال بدون رقم؟")) return;
+            let updates = {};
+            let deletedCount = 0;
+            for (let key in globalContacts) {
+                const phone = globalContacts[key].phone;
+                const hasNumbers = phone ? /\d/.test(phone) : false;
+                if (!hasNumbers) {
+                    updates[key] = null;
+                    deletedCount++;
+                }
+            }
+            if (deletedCount > 0) {
+                database.ref(`workspaces/${window.getSafePath(currentPassword)}/contacts`).update(updates);
+            }
+            window.showToast(`تم مسح ${deletedCount} جهة اتصال بدون رقم.`);
+        }
+
+        // --- دوال التصدير والاستيراد ---
+        window.downloadFile = function(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            window.showToast("تم التحميل!");
+        }
+
+        window.exportJSON = function() {
+            if(Object.keys(globalContacts).length === 0) return alert("مفيش داتا تتصدر!");
+            const dataStr = JSON.stringify(globalContacts, null, 2);
+            window.downloadFile(dataStr, `all_contacts_${window.getSafeFileName(currentPassword)}.json`, "application/json");
+        }
+
+        // ==========================================
+        // التحديث الجديد لضمان عمل ملفات الـ VCF على الموبايل
+        // ==========================================
+        window.exportAllVCF = function() {
+            if(Object.keys(globalContacts).length === 0) return alert("مفيش داتا تتصدر!");
+            let vcfData = "";
+            for (let key in globalContacts) {
+                const contact = globalContacts[key];
+                
+                // تنظيف الاسم من الأسطر الزائدة والمسافات
+                let name = (contact.name || 'بدون اسم').replace(/[\r\n]+/g, ' ').trim();
+                
+                // تنظيف الرقم من أي حروف أو مسافات (أرقام وعلامة + فقط)
+                let phone = contact.phone ? contact.phone.replace(/[^\d+]/g, '') : '';
+                
+                vcfData += "BEGIN:VCARD\r\n";
+                vcfData += "VERSION:3.0\r\n";
+                vcfData += "FN:" + name + "\r\n";
+                vcfData += "N:" + name + ";;;;\r\n";
+                if(phone) {
+                    vcfData += "TEL;TYPE=CELL:" + phone + "\r\n";
+                }
+                vcfData += "END:VCARD\r\n";
+            }
+            
+            // اسم الملف آمن باللغة الإنجليزية لمنع رفض الأندرويد له
+            const fileName = "all_contacts_" + new Date().getTime() + ".vcf";
+            window.downloadFile(vcfData, fileName, "text/x-vcard;charset=utf-8");
+        }
+
+        window.exportSelectedVCF = function() {
+            const keys = window.getSelectedKeys();
+            if (keys.length === 0) return alert("حدد جهات اتصال الأول!");
+            let vcfData = "";
+            keys.forEach(key => {
+                const contact = globalContacts[key];
+                let name = (contact.name || 'بدون اسم').replace(/[\r\n]+/g, ' ').trim();
+                let phone = contact.phone ? contact.phone.replace(/[^\d+]/g, '') : '';
+                
+                vcfData += "BEGIN:VCARD\r\n";
+                vcfData += "VERSION:3.0\r\n";
+                vcfData += "FN:" + name + "\r\n";
+                vcfData += "N:" + name + ";;;;\r\n";
+                if(phone) {
+                    vcfData += "TEL;TYPE=CELL:" + phone + "\r\n";
+                }
+                vcfData += "END:VCARD\r\n";
+            });
+            
+            const fileName = "selected_contacts_" + new Date().getTime() + ".vcf";
+            window.downloadFile(vcfData, fileName, "text/x-vcard;charset=utf-8");
+        }
+        // ==========================================
+
+        function batchUploadToFirebase(contactsArray, successMessage) {
+            if(contactsArray.length === 0) return;
+            window.showToast("جاري المعالجة والرفع للفايربيز... يرجى الانتظار");
+            
+            const ref = database.ref('workspaces/' + window.getSafePath(currentPassword) + '/contacts');
+            let updates = {};
+            contactsArray.forEach(contact => {
+                const newKey = ref.push().key; 
+                updates[newKey] = contact;
+            });
+
+            ref.update(updates).then(() => {
+                window.showToast(successMessage);
+            }).catch(err => {
+                alert("حصل خطأ أثناء الرفع: " + err.message);
+            });
+        }
+
+        window.importJSON = function(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            let contactsToUpload = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        for(let key in importedData) {
+                            contactsToUpload.push(importedData[key]);
+                        }
+                        if (i === files.length - 1) batchUploadToFirebase(contactsToUpload, `تم استيراد جهات الاتصال بنجاح!`);
+                    } catch (error) { alert(`ملف ${files[i].name} مش بصيغة JSON صحيحة.`); }
+                };
+                reader.readAsText(files[i]);
+            }
+            event.target.value = '';
+        }
+
+        window.importVCF = function(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            let contactsToUpload = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const cards = e.target.result.split(/BEGIN:VCARD/i);
+                    cards.forEach(card => {
+                        if (card.trim() === '') return;
+                        const nameMatch = card.match(/FN:(.*)/i) || card.match(/FN;.*:(.*)/i);
+                        const phoneMatch = card.match(/TEL.*:(.*)/i);
+                        const name = nameMatch ? nameMatch[1].trim() : '';
+                        const phone = phoneMatch ? phoneMatch[1].trim() : '';
+                        if (name || phone) contactsToUpload.push({ name, phone });
+                    });
+                    if (i === files.length - 1) batchUploadToFirebase(contactsToUpload, `تم استيراد جهات الاتصال بنجاح!`);
+                };
+                reader.readAsText(files[i]);
+            }
+            event.target.value = '';
+        }
+
+        window.extractTelegramContactsJSON = function(obj) {
+            let results = [];
+            let seenPhones = new Set();
+            function searchObj(curr) {
+                if (!curr || typeof curr !== 'object') return;
+                if (Array.isArray(curr)) { curr.forEach(searchObj); } 
+                else {
+                    if (curr.phone_number) {
+                        let name = [curr.first_name, curr.last_name].filter(Boolean).join(' ').trim();
+                        let phone = String(curr.phone_number).replace(/[^\d+]/g, '');
+                        if (phone && !seenPhones.has(phone)) {
+                            seenPhones.add(phone);
+                            results.push({ name: name || 'بدون اسم', phone: phone });
+                        }
+                    }
+                    Object.values(curr).forEach(searchObj);
+                }
+            }
+            searchObj(obj);
+            return results;
+        };
+
+        window.importTelegram = function(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            let filesProcessed = 0;
+            let contactsToUpload = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    if (file.name.toLowerCase().endsWith('.json')) {
+                        try {
+                            const data = JSON.parse(content);
+                            contactsToUpload.push(...window.extractTelegramContactsJSON(data));
+                        } catch (error) { alert(`ملف ${file.name} مش بصيغة JSON صحيحة.`); }
+                    } else if (file.name.toLowerCase().endsWith('.html')) {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(content, 'text/html');
+                        const nameElements = doc.querySelectorAll('.name');
+                        nameElements.forEach(nameEl => {
+                            const name = nameEl.innerText.trim();
+                            let nextEl = nameEl.nextElementSibling;
+                            let phone = '';
+                            if (nextEl && nextEl.classList.contains('details')) phone = nextEl.innerText.trim();
+                            phone = phone.replace(/[^\d+]/g, '');
+                            if ((name || phone) && phone !== '') contactsToUpload.push({ name: name || 'بدون اسم', phone });
+                        });
+                    } else {
+                        alert(`صيغة ملف ${file.name} غير مدعومة لتيليجرام.`);
+                    }
+
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        batchUploadToFirebase(contactsToUpload, `تم استيراد ${contactsToUpload.length} جهة اتصال من تيليجرام!`);
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+    </script>
+</body>
+</html>
